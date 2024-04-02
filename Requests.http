@@ -1,0 +1,5 @@
+# IDEA http client requests to test this locally.
+GET http://localhost:4221/ HTTP/1.1
+Accept: */*
+Host: localhost
+Connection: close
