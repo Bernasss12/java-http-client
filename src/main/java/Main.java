@@ -25,8 +25,16 @@ public class Main {
             try (BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()))) {
                 try (OutputStream out = clientSocket.getOutputStream()) {
                     String[] request = in.readLine().split(" "); // Ignore the client input
-                    if (Objects.equals(request[1], "/")) {
-                        out.write("HTTP/1.1 200 OK\r\n\r\n".getBytes());
+                    String path = request[1];
+                    if (path.startsWith("/echo/")) {
+                        String content = path.replace("/echo/", "");
+                        out.write("""
+                                HTTP/1.1 200 OK\r
+                                Content-Type: text/plain\r
+                                Content-Length: %d\r
+                                \r
+                                %s\r
+                                """.formatted(content.length(), content).trim().getBytes());
                     } else {
                         out.write("HTTP/1.1 404 Not Found\r\n\r\n".getBytes());
                     }

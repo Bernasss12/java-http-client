@@ -11,3 +11,9 @@ GET http://localhost:4221/not_found HTTP/1.1
 Accept: */*
 Host: localhost
 Connection: close
+
+### 200 Echo content
+GET http://localhost:4221/echo/garjbujabnsdu HTTP/1.1
+Accept: */*
+Host: localhost
+Connection: close
