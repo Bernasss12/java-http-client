@@ -5,7 +5,11 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.Objects;
+
+import model.HttpRequest;
+import model.HttpResponse;
+import model.HttpResponseContentType;
+import model.HttpResponseStatus;
 
 public class Main {
 
@@ -22,27 +26,41 @@ public class Main {
             System.out.println("Waiting for connection!");
             clientSocket = serverSocket.accept(); // Wait for connection from client.
             System.out.println("Connected!");
-            try (BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()))) {
+            try (InputStream in = clientSocket.getInputStream()) {
                 try (OutputStream out = clientSocket.getOutputStream()) {
-                    String[] request = in.readLine().split(" "); // Ignore the client input
-                    String path = request[1];
-                    if (path.equals("/")) {
-                        out.write("HTTP/1.1 200 OK\r\n\r\n".getBytes());
-                    } else if (path.startsWith("/echo/")) {
-                        String content = path.replace("/echo/", "");
-                        out.write("""
-                                HTTP/1.1 200 OK\r
-                                Content-Type: text/plain\r
-                                Content-Length: %d\r
-                                \r
-                                %s\r
-                                """.formatted(content.length(), content).trim().getBytes());
+                    HttpRequest request = HttpRequest.fromStream(in);
+                    if (request.path().equals("/")) {
+                        out.write(new HttpResponse(
+                                "HTTP/1.1",
+                                HttpResponseStatus.OK,
+                                null,
+                                null
+                        ).getBytes());
+                    } else if (request.path().equals("/user-agent")) {
+                        out.write(new HttpResponse(
+                                "HTTP/1.1",
+                                HttpResponseStatus.OK,
+                                HttpResponseContentType.TEXT_PLAIN,
+                                request.headers().get("User-Agent")
+                        ).getBytes());
+                    } else if (request.path().startsWith("/echo/")) {
+                        String content = request.path().replace("/echo/", "");
+                        out.write(new HttpResponse(
+                                "HTTP/1.1",
+                                HttpResponseStatus.OK,
+                                HttpResponseContentType.TEXT_PLAIN,
+                                content
+                        ).getBytes());
                     } else {
-                        out.write("HTTP/1.1 404 Not Found\r\n\r\n".getBytes());
+                        out.write(new HttpResponse(
+                                "HTTP/1.1",
+                                HttpResponseStatus.NOT_FOUNT,
+                                null,
+                                null
+                        ).getBytes());
                     }
                 }
             }
-            System.out.println("accepted new connection");
         } catch (IOException e) {
             System.out.println("IOException: " + e.getMessage());
         }

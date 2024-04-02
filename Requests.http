@@ -17,3 +17,10 @@ GET http://localhost:4221/echo/garjbujabnsdu HTTP/1.1
 Accept: */*
 Host: localhost
 Connection: close
+
+### 200 User-Agent
+GET /user-agent HTTP/1.1
+Accept: */*
+Host: localhost:4221
+Connection: close
+User-Agent: curl/7.64.1
