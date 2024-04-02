@@ -1,5 +1,13 @@
 # IDEA http client requests to test this locally.
+
+### 200 OK
 GET http://localhost:4221/ HTTP/1.1
+Accept: */*
+Host: localhost
+Connection: close
+
+### 404 NOT FOUND
+GET http://localhost:4221/not_found HTTP/1.1
 Accept: */*
 Host: localhost
 Connection: close

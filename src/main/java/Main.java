@@ -5,6 +5,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.Objects;
 
 public class Main {
 
@@ -23,10 +24,12 @@ public class Main {
             System.out.println("Connected!");
             try (BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()))) {
                 try (OutputStream out = clientSocket.getOutputStream()) {
-                    in.readLine(); // Ignore the client input
-                    System.out.println("Input was read from client");
-                    out.write("HTTP/1.1 200 OK\r\n\r\n".getBytes());
-                    System.out.println("Output was sent to client");
+                    String[] request = in.readLine().split(" "); // Ignore the client input
+                    if (Objects.equals(request[1], "/")) {
+                        out.write("HTTP/1.1 200 OK\r\n\r\n".getBytes());
+                    } else {
+                        out.write("HTTP/1.1 404 Not Found\r\n\r\n".getBytes());
+                    }
                 }
             }
             System.out.println("accepted new connection");
