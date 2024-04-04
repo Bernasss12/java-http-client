@@ -1,6 +1,9 @@
 package model.response;
 
 public interface ContentType {
+
+    ContentType Null = () -> null;
+
     String getResponseText();
 
     enum Text implements ContentType {

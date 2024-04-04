@@ -117,7 +117,7 @@ public class Main {
                         out.write(new HttpResponse(
                                 "HTTP/1.1",
                                 Status.NOT_FOUNT,
-                                null,
+                                ContentType.Text.PLAIN,
                                 "Directory cannot be null"
                         ).getBytes());
                         return;
@@ -132,7 +132,7 @@ public class Main {
                     out.write(new HttpResponse(
                             "HTTP/1.1",
                             Status.NOT_FOUNT,
-                            null,
+                            ContentType.Null,
                             null
                     ).getBytes());
                 }

@@ -34,20 +34,31 @@ public record HttpRequest(
         String version = header[2];
         lines.removeFirst();
 
+        System.out.println("Reading headers!");
         // Iterate through remaining header lines!
         Map<String, String> headers = new HashMap<>();
         for (String line : lines) {
             String[] headerField = line.split(": ");
             headers.put(headerField[0], headerField[1]);
         }
+        System.out.println("Read headers!");
 
         // If there is defined body, read it.
         String content = "";
         if (headers.containsKey("Content-Length")) {
-            int length = Integer.parseInt(headers.get("Content-Length"));
-            byte[] body = new byte[length];
-            int _ignored = input.read(body);
-            content = new String(body);
+            System.out.println("Reading body!");
+            int expectedLength = Integer.parseInt(headers.get("Content-Length"));
+            byte[] body = new byte[expectedLength];
+            System.out.printf("Expecting %d bytes...%n", expectedLength);
+            try {
+                int readLength = input.read(body, 0, input.available());
+                System.out.printf("Read %d bytes.%n", readLength);
+                content = new String(body);
+                System.out.println("Read body!");
+            } catch (Exception e) {
+                System.out.println("Something wrong happened while reading body! " + e.getMessage());
+                System.out.println("Leaving body empty.");
+            }
         }
 
         return new HttpRequest(requestType, path, version, headers, content);
@@ -76,7 +87,7 @@ public record HttpRequest(
         StringBuilder builder = new StringBuilder();
         builder.append("%s %s %s\n".formatted(type, path, version));
         for (Map.Entry<String, String> header: headers.entrySet()) {
-            builder.append("%s: %s".formatted(header.getKey(), header.getValue()));
+            builder.append("%s: %s%n".formatted(header.getKey(), header.getValue()));
         }
         if (!body.isBlank()) {
             builder.append("\n").append(body);
