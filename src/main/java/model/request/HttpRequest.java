@@ -69,4 +69,17 @@ public record HttpRequest(
             return true;
         } else return false;
     }
+
+    @Override
+    public String toString() {
+        StringBuilder builder = new StringBuilder();
+        builder.append("%s %s %s\n".formatted(type, path, version));
+        for (Map.Entry<String, String> header: headers.entrySet()) {
+            builder.append("%s: %s".formatted(header.getKey(), header.getValue()));
+        }
+        if (!body.isBlank()) {
+            builder.append("\n").append(body);
+        }
+        return builder.toString();
+    }
 }

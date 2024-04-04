@@ -55,7 +55,9 @@ public class Main {
         System.out.println("Connected!");
         try (InputStream in = clientSocket.getInputStream()) {
             try (OutputStream out = clientSocket.getOutputStream()) {
+                System.out.println("Reading request...");
                 HttpRequest request = HttpRequest.fromStream(in);
+                System.out.println("Got: " + request);
                 if (request.matches(HttpRequestType.GET, "/")) {
                     out.write(new HttpResponse(
                             "HTTP/1.1",
