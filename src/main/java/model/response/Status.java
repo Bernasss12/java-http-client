@@ -1,19 +1,19 @@
-package model;
+package model.response;
 
-public enum HttpResponseStatus {
+public enum Status {
     OK(200, "OK"),
     NOT_FOUNT(404, "Not Found");
 
     final int code;
     final String message;
 
-    HttpResponseStatus(int code, String message) {
+    Status(int code, String message) {
         this.code = code;
         this.message = message;
     }
 
-    public static HttpResponseStatus fromCode(int code) {
-        for (HttpResponseStatus status : HttpResponseStatus.values()) {
+    public static Status fromCode(int code) {
+        for (Status status : Status.values()) {
             if (status.code == code) {
                 return status;
             }

@@ -1,4 +1,4 @@
-package model;
+package model.request;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -38,5 +38,21 @@ public record HttpRequest(
         }
         // TODO For other types of requests there might be content here...
         return new HttpRequest(requestType, path, version, headers, "");
+    }
+
+    /**
+     * Check if the provided request type and match string matches the current HttpRequest instance.
+     *
+     * @param requestType The HttpRequestType to compare with the current request type.
+     * @param match The match string to compare with the current request path.
+     * @return true if the request type and match string matches the current HttpRequest, false otherwise.
+     */
+    public boolean matches(HttpRequestType requestType, String match) {
+        if (requestType != type()) return false;
+        if (match.endsWith("*")) {
+            return path().startsWith(match.substring(0, match.length() - 2));
+        } else {
+            return path().equals(match);
+        }
     }
 }

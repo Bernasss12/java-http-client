@@ -1,9 +1,9 @@
-package model;
+package model.response;
 
 public record HttpResponse(
         String version,
-        HttpResponseStatus status,
-        HttpResponseContentType contentType,
+        Status status,
+        ContentType contentType,
         Object content
 
 ) {
@@ -12,7 +12,7 @@ public record HttpResponse(
         StringBuilder builder = new StringBuilder("%s %s\r\n".formatted(version, status));
         if (content != null) {
             String contentString = content.toString();
-            builder.append("Content-Type: %s\r\n".formatted(contentType.message));
+            builder.append("Content-Type: %s\r\n".formatted(contentType.getResponseText()));
             builder.append("Content-Length: %d\r\n".formatted(contentString.length()));
             builder.append("\r\n");
             builder.append(content);

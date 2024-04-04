@@ -1,18 +1,38 @@
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
-import model.HttpRequest;
-import model.HttpResponse;
-import model.HttpResponseContentType;
-import model.HttpResponseStatus;
+import model.request.HttpRequest;
+import model.request.HttpRequestType;
+import model.response.ContentType;
+import model.response.HttpResponse;
+import model.response.Status;
 
+/**
+ * The Main class is the entry point of the program. It contains the main method which is responsible for running the program.
+ * The program starts by printing a log message and then proceeds to handle incoming client connections.
+ */
 public class Main {
+
+    static Path directory;
 
     public static void main(String[] args) {
         System.out.println("Logs from your program will appear here!");
+
+        int index = arrayIndexOf(args, "--directory");
+
+        if (index != -1) {
+            File dir = new File(args[index + 1]);
+            if (dir.exists() && dir.isDirectory()) {
+                directory = Paths.get(args[index + 1]);
+            }
+        }
 
         try (ServerSocket serverSocket = new ServerSocket(4221);) {
             serverSocket.setReuseAddress(true);
@@ -35,38 +55,64 @@ public class Main {
         try (InputStream in = clientSocket.getInputStream()) {
             try (OutputStream out = clientSocket.getOutputStream()) {
                 HttpRequest request = HttpRequest.fromStream(in);
-                if (request.path().equals("/")) {
+                if (request.matches(HttpRequestType.GET, "/")) {
                     out.write(new HttpResponse(
                             "HTTP/1.1",
-                            HttpResponseStatus.OK,
+                            Status.OK,
                             null,
                             null
                     ).getBytes());
-                } else if (request.path().equals("/user-agent")) {
+                } else if (request.matches(HttpRequestType.GET, "/user-agent")) {
                     out.write(new HttpResponse(
                             "HTTP/1.1",
-                            HttpResponseStatus.OK,
-                            HttpResponseContentType.TEXT_PLAIN,
+                            Status.OK,
+                            ContentType.Text.PLAIN,
                             request.headers().get("User-Agent")
                     ).getBytes());
-                } else if (request.path().startsWith("/echo/")) {
+                } else if (request.matches(HttpRequestType.GET, "/echo/*")) {
                     String content = request.path().replace("/echo/", "");
                     out.write(new HttpResponse(
                             "HTTP/1.1",
-                            HttpResponseStatus.OK,
-                            HttpResponseContentType.TEXT_PLAIN,
+                            Status.OK,
+                            ContentType.Text.PLAIN,
                             content
                     ).getBytes());
+                } else if (request.matches(HttpRequestType.GET, "/files/*")) {
+                    if (directory == null) out.write(new HttpResponse(
+                            "HTTP/1.1",
+                            Status.NOT_FOUNT,
+                            null,
+                            "Directory cannot be null"
+                    ).getBytes());
+
+                    File file = directory.resolve(remaining("/files/*", request.path())).toFile();
+                    if (!file.exists()) out.write(new HttpResponse(
+                            "HTTP/1.1",
+                            Status.NOT_FOUNT,
+                            ContentType.Text.PLAIN,
+                            "File \"%s\" was not found."
+                    ).getBytes());
+
+                    out.write(
+                            new HttpResponse(
+                                    "HTTP/1.1",
+                                    Status.OK,
+                                    ContentType.Application.OCTET_STREAM,
+                                    Files.readString(file.toPath())
+                            ).getBytes()
+                    );
+
                 } else {
                     out.write(new HttpResponse(
                             "HTTP/1.1",
-                            HttpResponseStatus.NOT_FOUNT,
+                            Status.NOT_FOUNT,
                             null,
                             null
                     ).getBytes());
                 }
             }
-        } catch (IOException e) {
+        } catch (
+                IOException e) {
             e.printStackTrace();
         } finally {
             try {
@@ -77,6 +123,37 @@ public class Main {
                 System.out.println("Disconnected!");
             }
         }
+    }
+
+    /**
+     * Finds the index of the first occurrence of the specified object in the given array.
+     *
+     * @param <T>    the type of the array elements
+     * @param array  the array to search in
+     * @param object the object to search for
+     * @return the index of the first occurrence of the object, or -1 if not found
+     */
+    private static <T> int arrayIndexOf(T[] array, T object) {
+        int index = 0;
+        for (T obj : array) {
+            if (obj.equals(object)) {
+                return index;
+            }
+            index++;
+        }
+        return -1;
+    }
+
+    /**
+     * Replaces the specified substring in the given path with an empty string.
+     * This expects the provided string to end with * and will ignore that correctly.
+     *
+     * @param match the substring to be replaced
+     * @param path  the path to perform the replacement on
+     * @return the modified path with the specified substring removed
+     */
+    private static String remaining(String match, String path) {
+        return path.replace(match.substring(0, match.length() - 2), "");
     }
 
 }

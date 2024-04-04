@@ -1,4 +1,4 @@
-package model;
+package model.request;
 
 public enum HttpRequestType {
     GET,
