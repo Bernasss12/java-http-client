@@ -14,6 +14,7 @@ public record HttpRequest(
         Map<String, String> headers,
         String content
 ) {
+
     public static HttpRequest fromStream(InputStream input) throws IOException {
         // TODO Different kinds of requests might require different kinds or parsing.
         BufferedReader reader = new BufferedReader(new InputStreamReader(input));
@@ -44,17 +45,17 @@ public record HttpRequest(
      * Check if the provided request type and match string matches the current HttpRequest instance.
      *
      * @param requestType The HttpRequestType to compare with the current request type.
-     * @param match The match string to compare with the current request path.
+     * @param match       The match string to compare with the current request path.
      * @return true if the request type and match string matches the current HttpRequest, false otherwise.
      */
     public boolean matches(HttpRequestType requestType, String match) {
         if (requestType != type()) return false;
-        if (match.endsWith("*")) {
+        if (match.endsWith("*") && path().startsWith(match.substring(0, match.length() - 2))) {
             System.out.printf("Partial match %s %s %s%n", requestType, match, path);
-            return path().startsWith(match.substring(0, match.length() - 2));
-        } else {
+            return true;
+        } else if (path().equals(match)) {
             System.out.printf("Full match %s %s %s%n", requestType, match, path);
-            return path().equals(match);
-        }
+            return true;
+        } else return false;
     }
 }
