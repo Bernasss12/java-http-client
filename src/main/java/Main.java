@@ -126,6 +126,7 @@ public class Main {
                     File file = Paths.get(directory.toAbsolutePath().toString(), remaining("/files/*", request.path())).toFile();
                     System.out.println("Writing to file: " + file.toPath().toAbsolutePath());
 
+                    file.createNewFile();
                     Files.writeString(file.toPath(), request.body());
 
                 } else {

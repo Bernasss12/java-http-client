@@ -4,6 +4,8 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -48,13 +50,13 @@ public record HttpRequest(
         if (headers.containsKey("Content-Length")) {
             System.out.println("Reading body!");
             int expectedLength = Integer.parseInt(headers.get("Content-Length"));
-            byte[] body = new byte[expectedLength];
+            char[] body = new char[expectedLength];
             System.out.printf("Expecting %d bytes...%n", expectedLength);
             try {
-                int readLength = input.read(body, 0, input.available());
+                int readLength = reader.read(body, 0, input.available());
                 System.out.printf("Read %d bytes.%n", readLength);
                 content = new String(body);
-                System.out.println("Read body!");
+                System.out.printf("Read body! %s%n", content);
             } catch (Exception e) {
                 System.out.println("Something wrong happened while reading body! " + e.getMessage());
                 System.out.println("Leaving body empty.");
@@ -90,7 +92,7 @@ public record HttpRequest(
             builder.append("%s: %s%n".formatted(header.getKey(), header.getValue()));
         }
         if (!body.isBlank()) {
-            builder.append("\n").append(body);
+            builder.append("\n").append(body).append("\n");
         }
         return builder.toString();
     }
