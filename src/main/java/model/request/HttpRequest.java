@@ -4,7 +4,9 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public record HttpRequest(
@@ -12,33 +14,42 @@ public record HttpRequest(
         String path,
         String version,
         Map<String, String> headers,
-        String content
+        String body
 ) {
 
     public static HttpRequest fromStream(InputStream input) throws IOException {
         // TODO Different kinds of requests might require different kinds or parsing.
         BufferedReader reader = new BufferedReader(new InputStreamReader(input));
-        StringBuilder builder = new StringBuilder();
-        String line;
+        List<String> lines = new ArrayList<>();
 
-        while ((line = reader.readLine()) != null && !line.isEmpty()) {
-            builder.append(line).append("\r\n");
+        String current;
+        while ((current = reader.readLine()) != null) {
+            lines.add(current);
         }
 
-        String request = builder.toString();
+        // Decompose first line as "REQ_TYPE PATH HTTP_VERSION"
+        String[] request = lines.getFirst().split(" ");
+        HttpRequestType requestType = HttpRequestType.valueOf(request[0]);
+        String path = request[1];
+        String version = request[2];
 
-        String[] lines = request.split("\r\n");
-        String[] requestLine = lines[0].split(" ");
-        HttpRequestType requestType = HttpRequestType.valueOf(requestLine[0]);
-        String path = requestLine[1];
-        String version = requestLine[2];
+        // Iterate through remaining lines, start reading as headers, then after an empty line read as body.
         Map<String, String> headers = new HashMap<>();
-        for (int i = 1; i < lines.length; i++) {
-            String[] header = lines[i].split(": ");
-            headers.put(header[0], header[1]);
+        boolean readingContent = false;
+        StringBuilder content = new StringBuilder();
+        for (String line : lines) {
+            if (!readingContent) {
+                if (line.isEmpty()) {
+                    readingContent = true;
+                } else {
+                    String[] header = line.split(": ");
+                    headers.put(header[0], header[1]);
+                }
+            } else {
+                content.append(line).append("\n");
+            }
         }
-        // TODO For other types of requests there might be content here...
-        return new HttpRequest(requestType, path, version, headers, "");
+        return new HttpRequest(requestType, path, version, headers, content.toString());
     }
 
     /**

@@ -90,8 +90,8 @@ public class Main {
                     }
 
                     File file = Paths.get(directory.toAbsolutePath().toString(), remaining("/files/*", request.path())).toFile();
-
                     System.out.println("Looking for file: " + file.toPath().toAbsolutePath());
+
                     if (!file.exists()) {
                         out.write(new HttpResponse(
                                 "HTTP/1.1",
@@ -110,6 +110,21 @@ public class Main {
                                     Files.readString(file.toPath())
                             ).getBytes()
                     );
+                } else if (request.matches(HttpRequestType.POST, "/files/*")) {
+                    if (directory == null) {
+                        out.write(new HttpResponse(
+                                "HTTP/1.1",
+                                Status.NOT_FOUNT,
+                                null,
+                                "Directory cannot be null"
+                        ).getBytes());
+                        return;
+                    }
+
+                    File file = Paths.get(directory.toAbsolutePath().toString(), remaining("/files/*", request.path())).toFile();
+                    System.out.println("Writing to file: " + file.toPath().toAbsolutePath());
+
+                    Files.writeString(file.toPath(), request.body());
 
                 } else {
                     out.write(new HttpResponse(
