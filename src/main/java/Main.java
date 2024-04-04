@@ -130,9 +130,11 @@ public class Main {
                     file.createNewFile();
 
                     try (FileWriter writer = new FileWriter(file)) {
+                        System.out.println("before");
                         writer.write(request.body());
+                        System.out.println("after");
                     } catch (Exception e) {
-                        System.err.println("Error while writing: " + e.getMessage());
+                        System.out.println("Error while writing: " + e.getMessage());
                     }
 
                 } else {
@@ -144,14 +146,13 @@ public class Main {
                     ).getBytes());
                 }
             }
-        } catch (
-                IOException e) {
-            e.printStackTrace();
+        } catch (IOException e) {
+            System.out.println("Problem when reading or writing on the streams.");
         } finally {
             try {
                 clientSocket.close();
             } catch (IOException e) {
-                e.printStackTrace();
+                System.out.println("Problem disconnecting gracefully!");
             } finally {
                 System.out.println("Disconnected!");
             }
