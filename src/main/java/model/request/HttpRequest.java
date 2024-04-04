@@ -46,24 +46,17 @@ public record HttpRequest(
         System.out.println("Read headers!");
 
         // If there is defined body, read it.
-        String content = "";
+        StringBuilder content = new StringBuilder();
         if (headers.containsKey("Content-Length")) {
             System.out.println("Reading body!");
             int expectedLength = Integer.parseInt(headers.get("Content-Length"));
-            char[] body = new char[expectedLength];
-            System.out.printf("Expecting %d bytes...%n", expectedLength);
-            try {
-                int readLength = reader.read(body, 0, input.available());
-                System.out.printf("Read %d bytes.%n", readLength);
-                content = new String(body);
-                System.out.printf("Read body! %s%n", content);
-            } catch (Exception e) {
-                System.out.println("Something wrong happened while reading body! " + e.getMessage());
-                System.out.println("Leaving body empty.");
+            while (reader.ready()) {
+                content.append((char) reader.read());
             }
+            System.out.printf("Body read, %d characters out of %d expected!%n", content.length(), expectedLength);
         }
 
-        return new HttpRequest(requestType, path, version, headers, content);
+        return new HttpRequest(requestType, path, version, headers, content.toString());
     }
 
     /**
