@@ -23,33 +23,34 @@ public record HttpRequest(
         List<String> lines = new ArrayList<>();
 
         String current;
-        while ((current = reader.readLine()) != null) {
+        while ((current = reader.readLine()) != null && !current.isEmpty()) {
             lines.add(current);
         }
 
         // Decompose first line as "REQ_TYPE PATH HTTP_VERSION"
-        String[] request = lines.getFirst().split(" ");
-        HttpRequestType requestType = HttpRequestType.valueOf(request[0]);
-        String path = request[1];
-        String version = request[2];
+        String[] header = lines.getFirst().split(" ");
+        HttpRequestType requestType = HttpRequestType.valueOf(header[0]);
+        String path = header[1];
+        String version = header[2];
+        lines.removeFirst();
 
-        // Iterate through remaining lines, start reading as headers, then after an empty line read as body.
+        // Iterate through remaining header lines!
         Map<String, String> headers = new HashMap<>();
-        boolean readingContent = false;
-        StringBuilder content = new StringBuilder();
         for (String line : lines) {
-            if (!readingContent) {
-                if (line.isEmpty()) {
-                    readingContent = true;
-                } else {
-                    String[] header = line.split(": ");
-                    headers.put(header[0], header[1]);
-                }
-            } else {
-                content.append(line).append("\n");
-            }
+            String[] headerField = line.split(": ");
+            headers.put(headerField[0], headerField[1]);
         }
-        return new HttpRequest(requestType, path, version, headers, content.toString());
+
+        // If there is defined body, read it.
+        String content = "";
+        if (headers.containsKey("Content-Length")) {
+            int length = Integer.parseInt(headers.get("Content-Length"));
+            byte[] body = new byte[length];
+            int _ignored = input.read(body);
+            content = new String(body);
+        }
+
+        return new HttpRequest(requestType, path, version, headers, content);
     }
 
     /**
