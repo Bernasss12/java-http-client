@@ -86,7 +86,8 @@ public class Main {
                             "Directory cannot be null"
                     ).getBytes());
 
-                    File file = directory.resolve(remaining("/files/*", request.path())).toFile();
+                    File file = Paths.get(directory.toAbsolutePath().toString(), remaining("/files/*", request.path())).toFile();
+
                     System.out.println("Looking for file: " + file.toPath().toAbsolutePath());
                     if (!file.exists()) out.write(new HttpResponse(
                             "HTTP/1.1",
