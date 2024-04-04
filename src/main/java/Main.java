@@ -85,7 +85,7 @@ public class Main {
                     if (directory == null) {
                         out.write(new HttpResponse(
                                 "HTTP/1.1",
-                                Status.NOT_FOUNT,
+                                Status.NOT_FOUND,
                                 null,
                                 "Directory cannot be null"
                         ).getBytes());
@@ -98,7 +98,7 @@ public class Main {
                     if (!file.exists()) {
                         out.write(new HttpResponse(
                                 "HTTP/1.1",
-                                Status.NOT_FOUNT,
+                                Status.NOT_FOUND,
                                 ContentType.Text.PLAIN,
                                 "File \"%s\" was not found."
                         ).getBytes());
@@ -117,7 +117,7 @@ public class Main {
                     if (directory == null) {
                         out.write(new HttpResponse(
                                 "HTTP/1.1",
-                                Status.NOT_FOUNT,
+                                Status.NOT_FOUND,
                                 ContentType.Text.PLAIN,
                                 "Directory cannot be null"
                         ).getBytes());
@@ -130,17 +130,30 @@ public class Main {
                     file.createNewFile();
 
                     try (FileWriter writer = new FileWriter(file)) {
-                        System.out.println("before");
                         writer.write(request.body());
-                        System.out.println("after");
+                        out.write(
+                                new HttpResponse(
+                                        "HTTP/1.1",
+                                        Status.CREATED,
+                                        ContentType.Null,
+                                        null
+                                ).getBytes()
+                        );
                     } catch (Exception e) {
                         System.out.println("Error while writing: " + e.getMessage());
                     }
 
+                    out.write(new HttpResponse(
+                            "HTTP/1.1",
+                            Status.NOT_FOUND,
+                            ContentType.Text.PLAIN,
+                            "Error writing file."
+                    ).getBytes());
+
                 } else {
                     out.write(new HttpResponse(
                             "HTTP/1.1",
-                            Status.NOT_FOUNT,
+                            Status.NOT_FOUND,
                             ContentType.Null,
                             null
                     ).getBytes());

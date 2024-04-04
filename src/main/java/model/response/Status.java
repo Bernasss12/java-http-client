@@ -2,7 +2,8 @@ package model.response;
 
 public enum Status {
     OK(200, "OK"),
-    NOT_FOUNT(404, "Not Found");
+    CREATED(201, "Created"),
+    NOT_FOUND(404, "Not Found");
 
     final int code;
     final String message;
