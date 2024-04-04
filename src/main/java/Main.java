@@ -79,22 +79,28 @@ public class Main {
                             content
                     ).getBytes());
                 } else if (request.matches(HttpRequestType.GET, "/files/*")) {
-                    if (directory == null) out.write(new HttpResponse(
-                            "HTTP/1.1",
-                            Status.NOT_FOUNT,
-                            null,
-                            "Directory cannot be null"
-                    ).getBytes());
+                    if (directory == null) {
+                        out.write(new HttpResponse(
+                                "HTTP/1.1",
+                                Status.NOT_FOUNT,
+                                null,
+                                "Directory cannot be null"
+                        ).getBytes());
+                        return;
+                    }
 
                     File file = Paths.get(directory.toAbsolutePath().toString(), remaining("/files/*", request.path())).toFile();
 
                     System.out.println("Looking for file: " + file.toPath().toAbsolutePath());
-                    if (!file.exists()) out.write(new HttpResponse(
-                            "HTTP/1.1",
-                            Status.NOT_FOUNT,
-                            ContentType.Text.PLAIN,
-                            "File \"%s\" was not found."
-                    ).getBytes());
+                    if (!file.exists()) {
+                        out.write(new HttpResponse(
+                                "HTTP/1.1",
+                                Status.NOT_FOUNT,
+                                ContentType.Text.PLAIN,
+                                "File \"%s\" was not found."
+                        ).getBytes());
+                        return;
+                    }
 
                     out.write(
                             new HttpResponse(
