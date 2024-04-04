@@ -131,6 +131,7 @@ public class Main {
 
                     try (FileWriter writer = new FileWriter(file)) {
                         writer.write(request.body());
+                        writer.flush();
                         out.write(
                                 new HttpResponse(
                                         "HTTP/1.1",
