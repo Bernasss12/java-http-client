@@ -31,6 +31,7 @@ public class Main {
             File dir = new File(args[index + 1]);
             if (dir.exists() && dir.isDirectory()) {
                 directory = Paths.get(args[index + 1]);
+                System.out.println("Initialized with given directory: " + directory.toAbsolutePath());
             }
         }
 
@@ -86,6 +87,7 @@ public class Main {
                     ).getBytes());
 
                     File file = directory.resolve(remaining("/files/*", request.path())).toFile();
+                    System.out.println("Looking for file: " + file.toPath().toAbsolutePath());
                     if (!file.exists()) out.write(new HttpResponse(
                             "HTTP/1.1",
                             Status.NOT_FOUNT,

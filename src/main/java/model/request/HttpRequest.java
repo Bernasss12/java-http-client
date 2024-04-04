@@ -50,8 +50,10 @@ public record HttpRequest(
     public boolean matches(HttpRequestType requestType, String match) {
         if (requestType != type()) return false;
         if (match.endsWith("*")) {
+            System.out.printf("Partial match %s %s %s%n", requestType, match, path);
             return path().startsWith(match.substring(0, match.length() - 2));
         } else {
+            System.out.printf("Full match %s %s %s%n", requestType, match, path);
             return path().equals(match);
         }
     }
